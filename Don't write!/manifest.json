@@ -1,0 +1,32 @@
+{
+	"manifest_version": 2,
+	"name": "Don't write!",
+	"version": "0.0.1",
+	"description": "Удалает бесящие переписки в VK",
+	"author": "Fedorov Roman",
+	"background": {
+		"scripts": [
+			"js/background.js"
+		]
+	},
+	"browser_action": {
+		"default_title": "Пока, бесящие переписки",
+		"default_icon": "icons/logo.png",
+		"default_popup": "index.html"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://vk.com/*"
+			],
+			"js": [
+				"js/content.js"
+			]
+		}
+	],
+	"permissions": [
+		"activeTab",
+		"tabs",
+		"storage"
+	]
+}
