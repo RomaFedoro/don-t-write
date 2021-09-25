@@ -34,7 +34,7 @@ function loadData(list) {
 function addStyle(id) {
     chrome.storage.local.get(['dntwrt'], function (result) {
         let conversations = result['dntwrt'];
-        conversations[id] = 1;
+        conversations[id].active = 1;
         addLimitation(id);
         loadData(conversations);
     });
@@ -43,7 +43,7 @@ function addStyle(id) {
 function deleteStyle(id) {
     chrome.storage.local.get(['dntwrt'], function (result) {
         let conversations = result['dntwrt'];
-        conversations[id] = 0;
+        conversations[id].active = 0;
         deleteLimitation(id);
         loadData(conversations);
     });
@@ -52,29 +52,28 @@ function deleteStyle(id) {
 function launchExtension() {
     chrome.storage.local.get(['dntwrt'], function (result) {
         let oldConversations = result['dntwrt'];
+        if (typeof oldConversations == "undefined") {
+            oldConversations = {};
+        }
         console.log(oldConversations);
         let newConversations = {};
-        let output = [];
-        let listConversations = document.querySelectorAll('ul[id="im_dialogs"] > li');
+        let listConversations = document.querySelectorAll('ul[id="im_dialogs"] li');
         for (let id = 0; id < listConversations.length; id += 1) {
             let conversation = listConversations[id];
             let idConversation = conversation.getAttribute('data-list-id');
             if (conversation.getAttribute('class').includes("nim-dialog_muted")) {
-                let imgLink = '';
                 if (Object.keys(oldConversations).indexOf(idConversation) != -1) {
                     newConversations[idConversation] = oldConversations[idConversation];
                 } else {
-                    newConversations[idConversation] = 0;
+                    newConversations[idConversation] = {'active': 0, 'imgLink': '', 'name': ''};
                 }
                 delete oldConversations[idConversation];
-
-                if (conversation.querySelectorAll('a').length == 1) {
-                    imgLink = conversation.querySelectorAll('div[class="im_grid"] > img')[0].currentSrc;
+                let imgLink = conversation.querySelectorAll('div[class="nim-peer--photo _im_dialog_photo"] img');
+                if (imgLink.length == 1) {
+                    newConversations[idConversation].imgLink = imgLink[0].currentSrc;
                 }
-                let nameConversation = conversation.querySelectorAll('span[class="_im_dialog_link"]')[0].innerText;
-                let active = newConversations[idConversation];
-                output.push([idConversation, imgLink, nameConversation, active]);
-                if (active == 1) {
+                newConversations[idConversation].name = conversation.querySelectorAll('span[class="_im_dialog_link"]')[0].innerText;
+                if (newConversations[idConversation].active == 1) {
                     addLimitation(idConversation);
                 }
             } else {
@@ -84,8 +83,8 @@ function launchExtension() {
             }
         }
         for (let id in oldConversations) {
-            if (oldConversations[id]) {
-                newConversations[id] = 1;
+            if (oldConversations[id].active) {
+                newConversations[id].active = 1;
                 addLimitation(id);
             }
         }
@@ -93,15 +92,13 @@ function launchExtension() {
 
         chrome.runtime.onMessage.addListener(
             function (message, sender, sendResponse) {
-                if (message.type === "getData") {
-                    sendResponse(output);
-                } else if (message.type === "addStyle") {
+                if (message.type === "addStyle") {
                     addStyle(message.id);
                 } else if (message.type === "deleteStyle") {
                     deleteStyle(message.id);
-                } else {
-                    console.error("Unrecognised message: ", message);
-                }                      
+                } else if (message.type === "activeExtensionPopUp") {
+                    sendResponse('OK!');
+                }                     
             }
         );
     });

@@ -1,5 +1,5 @@
 function checkCheckbox(id) {
-    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (document.getElementById(id).checked) {
             console.log('checked ' + id);
             chrome.tabs.sendMessage(tabs[0].id, { type: "addStyle", id: id });
@@ -11,19 +11,20 @@ function checkCheckbox(id) {
 }
 
 function start() {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: "getData" }, function (data) {
-            console.log(data);
-            if ((data) && (Object.keys(data).length)) {
-                let warning = document.querySelector(".warning");
-                warning.parentNode.removeChild(warning);
-            }
-
-            for (let i = 0; i < data.length; i += 1) {
-                let id = data[i][0];
-                let imgLink = data[i][1];
-                let nameConversation = data[i][2];
-                let active = data[i][3];
+    chrome.storage.local.get(['dntwrt'], function (result) {
+        let data = result['dntwrt'];
+        if (typeof data == "undefined") {
+            data = {};
+        }
+        console.log(data);
+        if (data) {
+            let warning = document.querySelector(".warning");
+            warning.parentNode.removeChild(warning);
+            for (let id in data) {
+                console.log(id);
+                let imgLink = data[id].imgLink;
+                let nameConversation = data[id].name;
+                let active = data[id].active;
 
                 if (imgLink === '') {
                     imgLink = '../icons/plug-image.svg';
@@ -63,9 +64,15 @@ function start() {
                 let container = document.querySelector('.list_conversations');
                 container.appendChild(conversation);
             }
-
-        });
+        }
     });
 }
 
-start();
+
+chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, { type: "activeExtensionPopUp" }, function (ans) {
+        if (ans == 'OK!'){
+            start();
+        }
+    });
+});

@@ -62,7 +62,6 @@ html {
     margin-bottom: 2px;
     align-content: center;
     align-items: center;
-    cursor: pointer;
     transition: .2s;
     border-radius: 8px;
 }

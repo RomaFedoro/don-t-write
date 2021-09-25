@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Don't write!",
-	"version": "1.0",
+	"version": "1.1",
 	"description": "Удалает бесящие переписки в VK",
 	"icons": { 
 		"128": "icons/logo.png" 
@@ -20,7 +20,7 @@
 	"content_scripts": [
 		{
 			"matches": [
-				"https://vk.com/*"
+				"<all_urls>"
 			],
 			"js": [
 				"js/content.js"
